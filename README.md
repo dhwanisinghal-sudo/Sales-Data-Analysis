@@ -18,3 +18,4 @@ This project performs Exploratory Data Analysis (EDA) on a sales dataset using P
 
 ## Conclusion
 The analysis highlights important sales trends across categories, regions, and time. Data visualization helped in identifying patterns and deriving meaningful insights.
+This project also focuses on analyzing e-commerce order trends and seasonal patterns using monthly sales data.
