@@ -19,7 +19,7 @@ st.markdown("Complete dashboard with trends, seasonality & insights 📊")
 @st.cache_data
 def load_data():
     df = pd.read_csv("train.csv", encoding='latin1')
-    df.columns = df.columns.str.strip()
+    df.columns = df.columns.str.strip()  # clean column names
     return df
 
 df = load_data()
@@ -38,7 +38,7 @@ st.sidebar.header("🔍 Filters")
 
 # Date range filter
 date_range = st.sidebar.date_input("Select Date Range",
-                                  [df['Order Date'].min(), df['Order Date'].max()])
+                                   [df['Order Date'].min(), df['Order Date'].max()])
 
 # Category filter
 category = st.sidebar.multiselect("Category", df['Category'].dropna().unique())
@@ -85,8 +85,10 @@ else:
 st.subheader("📈 Daily Sales Trend")
 if 'Sales' in filtered_df.columns:
     daily_sales = filtered_df.groupby('Order Date')['Sales'].sum()
-    plt.figure()
-    daily_sales.plot(title="Daily Sales")
+    plt.figure(figsize=(10,4))
+    daily_sales.plot(title="Daily Sales", color='green')
+    plt.xlabel("Date")
+    plt.ylabel("Sales")
     st.pyplot(plt)
 
 # ------------------ SALES vs PROFIT TREND ------------------
@@ -98,26 +100,31 @@ if 'Sales' in filtered_df.columns and 'Profit' in filtered_df.columns:
 # ------------------ ORDER VOLUME ------------------
 st.subheader("📦 Order Volume Trend")
 orders = filtered_df.groupby('Order Date').size()
-plt.figure()
-orders.plot(title="Orders per Day")
+plt.figure(figsize=(10,4))
+orders.plot(title="Orders per Day", color='orange')
+plt.xlabel("Date")
+plt.ylabel("Number of Orders")
 st.pyplot(plt)
 
 # ------------------ MOVING AVERAGE ------------------
 st.subheader("📉 Moving Average (7 Days)")
 if 'Sales' in filtered_df.columns:
     rolling = daily_sales.rolling(7).mean()
-    plt.figure()
-    daily_sales.plot(label="Actual")
-    rolling.plot(label="7-Day Avg")
+    plt.figure(figsize=(10,4))
+    daily_sales.plot(label="Actual", color='blue')
+    rolling.plot(label="7-Day Avg", color='red')
     plt.legend()
+    plt.xlabel("Date")
+    plt.ylabel("Sales")
     st.pyplot(plt)
 
 # ------------------ MONTHLY TREND ------------------
 st.subheader("📅 Monthly Trend")
 if 'Sales' in filtered_df.columns:
     monthly = filtered_df.groupby(['Year','Month'])['Sales'].sum().reset_index()
-    plt.figure()
+    plt.figure(figsize=(10,4))
     sns.lineplot(data=monthly, x='Month', y='Sales', hue='Year', marker='o')
+    plt.title("Monthly Sales Trend")
     st.pyplot(plt)
 
 # ------------------ TOP PRODUCTS ------------------
@@ -143,8 +150,10 @@ st.subheader("🌦 Seasonal Analysis")
 if 'Sales' in filtered_df.columns:
     seasonal = filtered_df.groupby('Month Name')['Sales'].sum().reindex(
         ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'])
-    plt.figure()
-    seasonal.plot(kind='bar', title="Seasonal Sales")
+    plt.figure(figsize=(8,4))
+    seasonal.plot(kind='bar', color='purple', title="Seasonal Sales")
+    plt.xlabel("Month")
+    plt.ylabel("Sales")
     st.pyplot(plt)
 
 # ------------------ WEEKDAY SALES ------------------
@@ -152,23 +161,27 @@ st.subheader("📆 Weekday Sales")
 if 'Sales' in filtered_df.columns:
     weekday_sales = filtered_df.groupby('Weekday')['Sales'].sum().reindex(
         ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'])
-    plt.figure()
-    weekday_sales.plot(kind='bar', title="Weekday Sales")
+    plt.figure(figsize=(8,4))
+    weekday_sales.plot(kind='bar', color='teal', title="Weekday Sales")
+    plt.xlabel("Weekday")
+    plt.ylabel("Sales")
     st.pyplot(plt)
 
 # ------------------ QUARTERLY SALES ------------------
 st.subheader("📅 Quarterly Sales")
 if 'Sales' in filtered_df.columns:
     quarter = filtered_df.groupby('Quarter')['Sales'].sum()
-    plt.figure()
-    quarter.plot(kind='bar', title="Quarterly Sales")
+    plt.figure(figsize=(6,4))
+    quarter.plot(kind='bar', color='skyblue', title="Quarterly Sales")
+    plt.xlabel("Quarter")
+    plt.ylabel("Sales")
     st.pyplot(plt)
 
 # ------------------ CATEGORY-WISE ------------------
 st.subheader("📦 Category-wise Sales")
 if 'Sales' in filtered_df.columns:
     cat_sales = filtered_df.groupby('Category')['Sales'].sum()
-    plt.figure()
+    plt.figure(figsize=(6,6))
     cat_sales.plot(kind='pie', autopct='%1.1f%%', title="Category-wise Sales")
     st.pyplot(plt)
 
@@ -192,10 +205,13 @@ if forecasting_available and 'Sales' in df.columns:
         model = ARIMA(ts, order=(5,1,0))
         model_fit = model.fit()
         forecast = model_fit.forecast(steps=30)
-        plt.figure()
-        ts.plot(label='Actual')
-        forecast.plot(label='Forecast')
+        plt.figure(figsize=(10,4))
+        ts.plot(label='Actual', color='blue')
+        forecast.plot(label='Forecast', color='red')
         plt.legend()
+        plt.xlabel("Date")
+        plt.ylabel("Sales")
+        plt.title("Sales Forecast")
         st.pyplot(plt)
     except:
         st.warning("Forecasting failed due to data limitations")
