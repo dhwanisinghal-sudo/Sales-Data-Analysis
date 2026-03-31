@@ -2,13 +2,19 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-from statsmodels.tsa.arima.model import ARIMA
+
+# Optional forecasting (safe import)
+try:
+    from statsmodels.tsa.arima.model import ARIMA
+    forecasting_available = True
+except:
+    forecasting_available = False
 
 st.set_page_config(page_title="E-commerce Dashboard", layout="wide")
 
 # ------------------ TITLE ------------------
 st.title("🛒 E-commerce Order Trend & Seasonal Analysis")
-st.markdown("Complete dashboard with trends, seasonality, forecasting & business insights 📊")
+st.markdown("Complete dashboard with trends, seasonality & insights 📊")
 
 # ------------------ LOAD DATA ------------------
 @st.cache_data
@@ -61,7 +67,7 @@ plt.figure()
 daily_sales.plot()
 st.pyplot(plt)
 
-# ------------------ ORDER COUNT TREND ------------------
+# ------------------ ORDER COUNT ------------------
 st.subheader("📦 Order Volume Trend")
 
 orders = filtered_df.groupby('Order Date').size()
@@ -96,7 +102,7 @@ st.subheader("📊 Year-over-Year Growth")
 yoy = df.groupby('Year')['Sales'].sum().pct_change() * 100
 st.line_chart(yoy)
 
-# ------------------ SEASONAL ANALYSIS ------------------
+# ------------------ SEASONAL ------------------
 st.subheader("🌦 Seasonal Analysis")
 
 seasonal = filtered_df.groupby('Month Name')['Sales'].sum().reindex(
@@ -107,7 +113,7 @@ plt.figure()
 seasonal.plot(kind='bar')
 st.pyplot(plt)
 
-# ------------------ WEEKDAY ANALYSIS ------------------
+# ------------------ WEEKDAY ------------------
 st.subheader("📆 Weekday Sales")
 
 weekday_sales = filtered_df.groupby('Weekday')['Sales'].sum().reindex(
@@ -118,7 +124,7 @@ plt.figure()
 weekday_sales.plot(kind='bar')
 st.pyplot(plt)
 
-# ------------------ QUARTERLY ------------------
+# ------------------ QUARTER ------------------
 st.subheader("📅 Quarterly Sales")
 
 quarter = filtered_df.groupby('Quarter')['Sales'].sum()
@@ -154,7 +160,7 @@ st.pyplot(plt)
 st.subheader("💡 Profit Ratio")
 
 filtered_df['Profit Ratio'] = filtered_df['Profit'] / filtered_df['Sales']
-st.write("Average Profit Ratio:", filtered_df['Profit Ratio'].mean())
+st.write("Average Profit Ratio:", round(filtered_df['Profit Ratio'].mean(), 3))
 
 # ------------------ LOSS ORDERS ------------------
 st.subheader("⚠️ Loss Making Orders")
@@ -162,21 +168,28 @@ st.subheader("⚠️ Loss Making Orders")
 loss_df = filtered_df[filtered_df['Profit'] < 0]
 st.write("Total Loss Orders:", loss_df.shape[0])
 
-# ------------------ FORECAST ------------------
-st.subheader("🔮 Sales Forecast (Next 30 Days)")
+# ------------------ FORECAST (SAFE) ------------------
+if forecasting_available:
+    st.subheader("🔮 Sales Forecast (Next 30 Days)")
 
-ts = df.groupby('Order Date')['Sales'].sum()
+    ts = df.groupby('Order Date')['Sales'].sum()
 
-model = ARIMA(ts, order=(5,1,0))
-model_fit = model.fit()
+    try:
+        model = ARIMA(ts, order=(5,1,0))
+        model_fit = model.fit()
+        forecast = model_fit.forecast(steps=30)
 
-forecast = model_fit.forecast(steps=30)
+        plt.figure()
+        ts.plot(label='Actual')
+        forecast.plot(label='Forecast')
+        plt.legend()
+        st.pyplot(plt)
 
-plt.figure()
-ts.plot(label='Actual')
-forecast.plot(label='Forecast')
-plt.legend()
-st.pyplot(plt)
+    except:
+        st.warning("Forecasting failed due to data limitations")
+
+else:
+    st.info("Forecasting not available (statsmodels not installed)")
 
 # ------------------ PEAK MONTH ------------------
 st.subheader("🏆 Peak Sales Month")
