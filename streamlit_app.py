@@ -35,8 +35,16 @@ df['Quarter'] = df['Order Date'].dt.quarter
 
 # ------------------ SIDEBAR FILTERS ------------------
 st.sidebar.header("🔍 Filters")
-date_range = st.sidebar.date_input("Select Date Range", [df['Order Date'].min(), df['Order Date'].max()])
-category = st.sidebar.multiselect("Category", df['Category'].dropna().unique())
+
+# Filter options based on actual dataset
+min_date = df['Order Date'].min()
+max_date = df['Order Date'].max()
+date_range = st.sidebar.date_input("Select Date Range", [min_date, max_date],
+                                   min_value=min_date, max_value=max_date)
+
+category_options = df['Category'].dropna().unique()
+category = st.sidebar.multiselect("Category", category_options)
+
 year_options = sorted(df['Year'].unique())
 year = st.sidebar.multiselect("Year", year_options)
 
@@ -46,12 +54,14 @@ filtered_df = filtered_df[
     (filtered_df['Order Date'] >= pd.to_datetime(date_range[0])) &
     (filtered_df['Order Date'] <= pd.to_datetime(date_range[1]))
 ]
+
 if category:
     filtered_df = filtered_df[filtered_df['Category'].isin(category)]
+
 if year:
     filtered_df = filtered_df[filtered_df['Year'].isin(year)]
 
-# ------------------ SAFE METRICS FUNCTION ------------------
+# ------------------ SAFE FUNCTIONS ------------------
 def safe_sum(df, col):
     return df[col].sum() if col in df.columns and not df.empty else 0
 
@@ -71,7 +81,7 @@ col4.metric("📦 Avg Order Value", f"{safe_mean(filtered_df,'Sales'):,.0f}")
 
 # ------------------ DAILY SALES ------------------
 st.subheader("📈 Daily Sales Trend")
-if not filtered_df.empty and 'Sales' in filtered_df.columns:
+if not filtered_df.empty:
     daily_sales = filtered_df.groupby('Order Date')['Sales'].sum()
     plt.figure(figsize=(10,4))
     daily_sales.plot(title="Daily Sales", color='green')
@@ -83,7 +93,7 @@ else:
 
 # ------------------ SALES VS PROFIT ------------------
 st.subheader("📊 Sales vs Profit Trend")
-if not filtered_df.empty and 'Sales' in filtered_df.columns and 'Profit' in filtered_df.columns:
+if not filtered_df.empty:
     trend = filtered_df.groupby('Order Date')[['Sales','Profit']].sum()
     st.line_chart(trend)
 else:
@@ -103,7 +113,7 @@ else:
 
 # ------------------ MOVING AVERAGE ------------------
 st.subheader("📉 Moving Average (7 Days)")
-if not filtered_df.empty and 'Sales' in filtered_df.columns:
+if not filtered_df.empty:
     rolling = daily_sales.rolling(7).mean()
     plt.figure(figsize=(10,4))
     daily_sales.plot(label="Actual", color='blue')
@@ -115,7 +125,7 @@ if not filtered_df.empty and 'Sales' in filtered_df.columns:
 
 # ------------------ MONTHLY TREND ------------------
 st.subheader("📅 Monthly Trend")
-if not filtered_df.empty and 'Sales' in filtered_df.columns:
+if not filtered_df.empty:
     monthly = filtered_df.groupby(['Year','Month'])['Sales'].sum().reset_index()
     plt.figure(figsize=(10,4))
     sns.lineplot(data=monthly, x='Month', y='Sales', hue='Year', marker='o')
@@ -124,7 +134,7 @@ if not filtered_df.empty and 'Sales' in filtered_df.columns:
 
 # ------------------ CATEGORY-WISE ------------------
 st.subheader("📦 Category-wise Sales")
-if not filtered_df.empty and 'Sales' in filtered_df.columns and 'Category' in filtered_df.columns:
+if not filtered_df.empty:
     cat_sales = filtered_df.groupby('Category')['Sales'].sum()
     plt.figure(figsize=(6,6))
     cat_sales.plot(kind='pie', autopct='%1.1f%%', title="Category-wise Sales")
@@ -132,20 +142,16 @@ if not filtered_df.empty and 'Sales' in filtered_df.columns and 'Category' in fi
 
 # ------------------ PROFIT RATIO ------------------
 st.subheader("💡 Profit Ratio")
-if not filtered_df.empty and 'Profit' in filtered_df.columns and 'Sales' in filtered_df.columns:
+if not filtered_df.empty:
     filtered_df['Profit Ratio'] = np.where(filtered_df['Sales']!=0,
                                            filtered_df['Profit']/filtered_df['Sales'], 0)
     st.write("Average Profit Ratio:", round(filtered_df['Profit Ratio'].mean(),3))
-else:
-    st.info("Profit ratio cannot be calculated for this selection.")
 
 # ------------------ LOSS ORDERS ------------------
 st.subheader("⚠️ Loss Making Orders")
-if not filtered_df.empty and 'Profit' in filtered_df.columns:
+if not filtered_df.empty:
     loss_df = filtered_df[filtered_df['Profit'] < 0]
     st.write("Total Loss Orders:", loss_df.shape[0])
-else:
-    st.info("No loss orders for this selection.")
 
 # ------------------ DOWNLOAD ------------------
 st.subheader("⬇️ Download Data")
