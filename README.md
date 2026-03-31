@@ -1,2 +1,20 @@
-# Sales-Data-Analysis
-Sales data analysis using Python (Pandas, Matplotlib, Seaborn) to extract insights and trends. Includes data cleaning, EDA, and visualizations like bar charts, line graphs, pie charts, and heatmaps. Identifies top categories, regions, cities, monthly trends, and customer segments for better business understanding.
+# Sales Data Analysis 📊
+
+## Overview
+This project performs Exploratory Data Analysis (EDA) on a sales dataset using Python.
+
+## Tools Used
+- Python
+- Pandas
+- Matplotlib
+- Seaborn
+
+## Key Insights
+- Highest Sales Category: Technology
+- Best Region: West
+- Top City: New York City
+- Peak Month: November
+- Top Segment: Consumer
+
+## Conclusion
+The analysis highlights important sales trends across categories, regions, and time. Data visualization helped in identifying patterns and deriving meaningful insights.
