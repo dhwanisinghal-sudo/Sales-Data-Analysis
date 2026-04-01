@@ -1,76 +1,73 @@
 import streamlit as st
 import pandas as pd
+import plotly.express as px
 
-# Plotly safe
-try:
-    import plotly.express as px
-    PLOTLY = True
-except:
-    PLOTLY = False
-
-st.set_page_config(page_title="GOD MODE Dashboard", layout="wide")
+st.set_page_config(page_title="E-commerce Dashboard", layout="wide")
 
 # ================= LOAD =================
 @st.cache_data
 def load():
-    df = pd.read_csv("train.csv")
+    df = pd.read_csv("filtered_data.csv")
 
     df.columns = df.columns.str.strip()
-    df = df.loc[:, ~df.columns.duplicated()]
 
-    rename = {}
-    for col in df.columns:
-        c = col.lower()
-        if "order" in c and "date" in c:
-            rename[col] = "Order Date"
-        elif "sales" in c:
-            rename[col] = "Sales"
-        elif "category" in c:
-            rename[col] = "Category"
-
-    df = df.rename(columns=rename)
-
-    if "Order Date" in df.columns:
-        df["Order Date"] = pd.to_datetime(df["Order Date"], errors="coerce")
+    # Convert date
+    df["Order Date"] = pd.to_datetime(df["Order Date"])
 
     return df
 
 df = load()
 
-# ================= FILTER =================
-st.sidebar.title("⚙️ Controls")
+# ================= SIDEBAR =================
+st.sidebar.title("Filters")
 
+# Date filter
+min_d = df["Order Date"].min()
+max_d = df["Order Date"].max()
+
+date_range = st.sidebar.date_input("Date Range", [min_d, max_d])
+
+# Category filter (SAFE NOW)
+category = st.sidebar.multiselect(
+    "Category",
+    sorted(df["Category"].dropna().unique())
+)
+
+# Region filter
+region = st.sidebar.multiselect(
+    "Region",
+    sorted(df["Region"].dropna().unique())
+)
+
+# ================= FILTER =================
 filtered = df.copy()
 
-if "Order Date" in df.columns:
-    min_d, max_d = df["Order Date"].min(), df["Order Date"].max()
-    dr = st.sidebar.date_input("Date Range", [min_d, max_d])
+# Date
+if len(date_range) == 2:
+    start, end = pd.to_datetime(date_range[0]), pd.to_datetime(date_range[1])
+    filtered = filtered[
+        (filtered["Order Date"] >= start) &
+        (filtered["Order Date"] <= end)
+    ]
 
-    if len(dr) == 2:
-        start, end = pd.to_datetime(dr[0]), pd.to_datetime(dr[1])
-        filtered = filtered[
-            (filtered["Order Date"] >= start) &
-            (filtered["Order Date"] <= end)
-        ]
+# Category
+if category:
+    filtered = filtered[filtered["Category"].isin(category)]
 
-if "Category" in df.columns:
-    cat = st.sidebar.multiselect(
-        "Category",
-        df["Category"].astype(str).dropna().unique()
-    )
-    if cat:
-        filtered = filtered[filtered["Category"].astype(str).isin(cat)]
+# Region
+if region:
+    filtered = filtered[filtered["Region"].isin(region)]
 
 # ================= EMPTY =================
-st.title("🛒 E-commerce GOD MODE Dashboard")
+st.title("🛒 E-commerce Order Trend & Seasonality Dashboard")
 
 if filtered.empty:
-    st.warning("No data")
+    st.warning("No data available")
     st.stop()
 
 # ================= KPI =================
+sales = filtered["Sales"].sum()
 orders = len(filtered)
-sales = filtered["Sales"].sum() if "Sales" in filtered.columns else 0
 
 c1, c2 = st.columns(2)
 c1.metric("📦 Orders", orders)
@@ -78,29 +75,18 @@ c2.metric("💰 Sales", f"{sales:,.0f}")
 
 st.divider()
 
-# ================= DAILY TREND =================
+# ================= ORDER TREND =================
 trend = filtered.groupby("Order Date").size().reset_index(name="Orders")
 
-# Moving Average
-trend["MA7"] = trend["Orders"].rolling(7).mean()
-
-st.subheader("📈 Order Trend + Moving Average")
-
-if PLOTLY:
-    fig = px.line(trend, x="Order Date", y=["Orders", "MA7"])
-    st.plotly_chart(fig, use_container_width=True)
-else:
-    st.line_chart(trend.set_index("Order Date"))
+fig = px.line(trend, x="Order Date", y="Orders", title="Order Trend")
+st.plotly_chart(fig, use_container_width=True)
 
 # ================= MONTHLY =================
 filtered["Month"] = filtered["Order Date"].dt.month
-monthly = filtered.groupby("Month").size()
+monthly = filtered.groupby("Month").size().reset_index(name="Orders")
 
-# Growth
-growth = monthly.pct_change() * 100
-
-st.subheader("📅 Monthly Orders + Growth")
-st.bar_chart(monthly)
+fig2 = px.bar(monthly, x="Month", y="Orders", title="Monthly Seasonality")
+st.plotly_chart(fig2, use_container_width=True)
 
 # ================= HEATMAP =================
 filtered["Year"] = filtered["Order Date"].dt.year
@@ -115,35 +101,23 @@ pivot = filtered.pivot_table(
 st.subheader("🔥 Seasonality Heatmap")
 st.dataframe(pivot)
 
-# ================= PEAK DETECTION =================
-peak_day = trend.loc[trend["Orders"].idxmax()]
-
-st.subheader("🚀 Peak Analysis")
-
-st.success(f"""
-Peak Orders Day: {peak_day['Order Date'].date()}  
-Orders: {int(peak_day['Orders'])}
-""")
-
 # ================= CATEGORY =================
-if "Category" in filtered.columns:
-    cat = filtered.groupby("Category").size()
+cat = filtered.groupby("Category").size().reset_index(name="Orders")
 
-    st.subheader("🛍️ Category Orders")
-    st.bar_chart(cat)
+fig3 = px.bar(cat, x="Category", y="Orders", color="Category")
+st.plotly_chart(fig3, use_container_width=True)
 
-# ================= SMART INSIGHTS =================
-st.subheader("🤖 Smart Insights")
+# ================= INSIGHTS =================
+peak_month = monthly.loc[monthly["Orders"].idxmax()]["Month"]
+low_month = monthly.loc[monthly["Orders"].idxmin()]["Month"]
 
-peak_month = monthly.idxmax()
-low_month = monthly.idxmin()
+st.subheader("🤖 Insights")
 
 st.info(f"""
-📌 Peak Month: {peak_month}  
+📈 Peak Month: {peak_month}  
 📉 Low Month: {low_month}  
 
-📊 Orders show clear seasonal behavior  
-📈 Moving average smooths volatility  
-🚀 Focus marketing during peak months  
-⚠️ Improve sales strategy in low months  
+👉 Strong seasonal pattern detected  
+👉 Focus marketing in peak months  
+👉 Improve strategy in low months  
 """)
