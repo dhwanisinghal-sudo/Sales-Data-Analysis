@@ -1,164 +1,171 @@
 import streamlit as st
 import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
-import numpy as np
+import plotly.express as px
 
-# Optional forecasting
-try:
-    from statsmodels.tsa.arima.model import ARIMA
-    forecasting_available = True
-except:
-    forecasting_available = False
+# ================= CONFIG =================
+st.set_page_config(page_title="Ultimate E-commerce Dashboard", layout="wide")
 
-st.set_page_config(page_title="E-commerce Dashboard", layout="wide")
-st.title("🛒 E-commerce Order Trend & Seasonal Analysis")
-st.markdown("Complete dashboard with trends, seasonality & insights 📊")
-
-# ------------------ LOAD DATA ------------------
+# ================= LOAD DATA =================
 @st.cache_data
 def load_data():
-    df = pd.read_csv("train.csv", encoding='latin1')
-    df.columns = df.columns.str.strip()  # clean column names
+    df = pd.read_csv("train.csv")
+
+    # Clean columns
+    df.columns = df.columns.str.strip()
+
+    # Auto rename
+    rename = {}
+    for col in df.columns:
+        c = col.lower()
+        if "sales" in c:
+            rename[col] = "Sales"
+        elif "profit" in c:
+            rename[col] = "Profit"
+        elif "order" in c and "date" in c:
+            rename[col] = "Order Date"
+        elif "category" in c:
+            rename[col] = "Category"
+        elif "product" in c:
+            rename[col] = "Product Name"
+        elif "region" in c:
+            rename[col] = "Region"
+
+    df = df.rename(columns=rename)
+
+    if "Order Date" in df.columns:
+        df["Order Date"] = pd.to_datetime(df["Order Date"], errors="coerce")
+
     return df
 
 df = load_data()
 
-# ------------------ PREPROCESS ------------------
-df['Order Date'] = pd.to_datetime(df['Order Date'], errors='coerce')
-df = df.dropna(subset=['Order Date'])
-df['Year'] = df['Order Date'].dt.year
-df['Month'] = df['Order Date'].dt.month
-df['Month Name'] = df['Order Date'].dt.strftime('%b')
-df['Weekday'] = df['Order Date'].dt.day_name()
-df['Quarter'] = df['Order Date'].dt.quarter
+# ================= SIDEBAR =================
+st.sidebar.title("🔍 Smart Filters")
 
-# ------------------ SIDEBAR FILTERS ------------------
-st.sidebar.header("🔍 Filters")
+# Date filter
+if "Order Date" in df.columns:
+    min_d, max_d = df["Order Date"].min(), df["Order Date"].max()
+    date_range = st.sidebar.date_input("Date", [min_d, max_d])
+else:
+    date_range = []
 
-# Filter options based on actual dataset
-min_date = df['Order Date'].min()
-max_date = df['Order Date'].max()
-date_range = st.sidebar.date_input("Select Date Range", [min_date, max_date],
-                                   min_value=min_date, max_value=max_date)
+# Category
+category = st.sidebar.multiselect(
+    "Category",
+    df["Category"].dropna().unique() if "Category" in df.columns else []
+)
 
-category_options = df['Category'].dropna().unique()
-category = st.sidebar.multiselect("Category", category_options)
+# Region
+region = st.sidebar.multiselect(
+    "Region",
+    df["Region"].dropna().unique() if "Region" in df.columns else []
+)
 
-year_options = sorted(df['Year'].unique())
-year = st.sidebar.multiselect("Year", year_options)
+# ================= FILTER =================
+filtered = df.copy()
 
-# ------------------ APPLY FILTERS ------------------
-filtered_df = df.copy()
-filtered_df = filtered_df[
-    (filtered_df['Order Date'] >= pd.to_datetime(date_range[0])) &
-    (filtered_df['Order Date'] <= pd.to_datetime(date_range[1]))
-]
+try:
+    if len(date_range) == 2:
+        start, end = pd.to_datetime(date_range[0]), pd.to_datetime(date_range[1])
+        filtered = filtered[
+            (filtered["Order Date"] >= start) &
+            (filtered["Order Date"] <= end)
+        ]
+except:
+    pass
 
 if category:
-    filtered_df = filtered_df[filtered_df['Category'].isin(category)]
+    filtered = filtered[filtered["Category"].isin(category)]
 
-if year:
-    filtered_df = filtered_df[filtered_df['Year'].isin(year)]
+if region:
+    filtered = filtered[filtered["Region"].isin(region)]
 
-# ------------------ SAFE FUNCTIONS ------------------
-def safe_sum(df, col):
-    return df[col].sum() if col in df.columns and not df.empty else 0
+# ================= EMPTY =================
+if filtered.empty:
+    st.warning("⚠️ No data for selected filters")
+    st.stop()
 
-def safe_mean(df, col):
-    return df[col].mean() if col in df.columns and not df.empty else 0
+# ================= KPIs =================
+sales = filtered["Sales"].sum() if "Sales" in filtered.columns else 0
+profit = filtered["Profit"].sum() if "Profit" in filtered.columns else 0
+orders = len(filtered)
 
-def safe_count(df):
-    return df.shape[0] if not df.empty else 0
+prev = df.iloc[:len(filtered)]
+prev_sales = prev["Sales"].sum() if "Sales" in prev.columns else 1
 
-# ------------------ KEY METRICS ------------------
-st.subheader("📊 Key Metrics")
-col1, col2, col3, col4 = st.columns(4)
-col1.metric("💰 Total Sales", f"{safe_sum(filtered_df,'Sales'):,.0f}")
-col2.metric("📈 Total Profit", f"{safe_sum(filtered_df,'Profit'):,.0f}")
-col3.metric("🛒 Orders", safe_count(filtered_df))
-col4.metric("📦 Avg Order Value", f"{safe_mean(filtered_df,'Sales'):,.0f}")
+growth = ((sales - prev_sales) / prev_sales) * 100 if prev_sales != 0 else 0
 
-# ------------------ DAILY SALES ------------------
-st.subheader("📈 Daily Sales Trend")
-if not filtered_df.empty:
-    daily_sales = filtered_df.groupby('Order Date')['Sales'].sum()
-    plt.figure(figsize=(10,4))
-    daily_sales.plot(title="Daily Sales", color='green')
-    plt.xlabel("Date")
-    plt.ylabel("Sales")
-    st.pyplot(plt)
-else:
-    st.info("No sales data for this selection.")
+c1, c2, c3 = st.columns(3)
+c1.metric("💰 Sales", f"{sales:,.0f}", f"{growth:.1f}%")
+c2.metric("📈 Profit", f"{profit:,.0f}")
+c3.metric("📦 Orders", orders)
 
-# ------------------ SALES VS PROFIT ------------------
-st.subheader("📊 Sales vs Profit Trend")
-if not filtered_df.empty:
-    trend = filtered_df.groupby('Order Date')[['Sales','Profit']].sum()
-    st.line_chart(trend)
-else:
-    st.info("No sales/profit data for this selection.")
+st.divider()
 
-# ------------------ ORDER VOLUME ------------------
-st.subheader("📦 Order Volume Trend")
-if not filtered_df.empty:
-    orders = filtered_df.groupby('Order Date').size()
-    plt.figure(figsize=(10,4))
-    orders.plot(title="Orders per Day", color='orange')
-    plt.xlabel("Date")
-    plt.ylabel("Number of Orders")
-    st.pyplot(plt)
-else:
-    st.info("No order data for this selection.")
+# ================= TREND =================
+if all(col in filtered.columns for col in ["Order Date", "Sales"]):
+    trend = filtered.groupby("Order Date")["Sales"].sum().reset_index()
 
-# ------------------ MOVING AVERAGE ------------------
-st.subheader("📉 Moving Average (7 Days)")
-if not filtered_df.empty:
-    rolling = daily_sales.rolling(7).mean()
-    plt.figure(figsize=(10,4))
-    daily_sales.plot(label="Actual", color='blue')
-    rolling.plot(label="7-Day Avg", color='red')
-    plt.legend()
-    plt.xlabel("Date")
-    plt.ylabel("Sales")
-    st.pyplot(plt)
+    fig = px.line(trend, x="Order Date", y="Sales", title="Sales Trend")
+    st.plotly_chart(fig, use_container_width=True)
 
-# ------------------ MONTHLY TREND ------------------
-st.subheader("📅 Monthly Trend")
-if not filtered_df.empty:
-    monthly = filtered_df.groupby(['Year','Month'])['Sales'].sum().reset_index()
-    plt.figure(figsize=(10,4))
-    sns.lineplot(data=monthly, x='Month', y='Sales', hue='Year', marker='o')
-    plt.title("Monthly Sales Trend")
-    st.pyplot(plt)
+# ================= CATEGORY =================
+if "Category" in filtered.columns:
+    cat = filtered.groupby("Category")["Sales"].sum().reset_index()
 
-# ------------------ CATEGORY-WISE ------------------
-st.subheader("📦 Category-wise Sales")
-if not filtered_df.empty:
-    cat_sales = filtered_df.groupby('Category')['Sales'].sum()
-    plt.figure(figsize=(6,6))
-    cat_sales.plot(kind='pie', autopct='%1.1f%%', title="Category-wise Sales")
-    st.pyplot(plt)
+    fig = px.bar(cat, x="Category", y="Sales", color="Category")
+    st.plotly_chart(fig, use_container_width=True)
 
-# ------------------ PROFIT RATIO ------------------
-st.subheader("💡 Profit Ratio")
-if not filtered_df.empty:
-    filtered_df['Profit Ratio'] = np.where(filtered_df['Sales']!=0,
-                                           filtered_df['Profit']/filtered_df['Sales'], 0)
-    st.write("Average Profit Ratio:", round(filtered_df['Profit Ratio'].mean(),3))
+# ================= REGION =================
+if "Region" in filtered.columns:
+    reg = filtered.groupby("Region")["Sales"].sum().reset_index()
 
-# ------------------ LOSS ORDERS ------------------
-st.subheader("⚠️ Loss Making Orders")
-if not filtered_df.empty:
-    loss_df = filtered_df[filtered_df['Profit'] < 0]
-    st.write("Total Loss Orders:", loss_df.shape[0])
+    fig = px.pie(reg, names="Region", values="Sales")
+    st.plotly_chart(fig, use_container_width=True)
 
-# ------------------ DOWNLOAD ------------------
-st.subheader("⬇️ Download Data")
-csv = filtered_df.to_csv(index=False).encode('utf-8')
-st.download_button("Download CSV", csv, "filtered_data.csv")
+# ================= TOP PRODUCTS =================
+if "Product Name" in filtered.columns:
+    top = (
+        filtered.groupby("Product Name")["Sales"]
+        .sum()
+        .sort_values(ascending=False)
+        .head(10)
+        .reset_index()
+    )
 
-# ------------------ RAW DATA ------------------
-st.subheader("📄 Raw Data")
-if st.checkbox("Show Data"):
-    st.write(filtered_df)
+    fig = px.bar(top, x="Sales", y="Product Name", orientation="h")
+    st.plotly_chart(fig, use_container_width=True)
+
+# ================= HEATMAP =================
+if "Order Date" in filtered.columns:
+    filtered["Month"] = filtered["Order Date"].dt.month
+    filtered["Year"] = filtered["Order Date"].dt.year
+
+    pivot = filtered.pivot_table(
+        values="Sales",
+        index="Year",
+        columns="Month",
+        aggfunc="sum"
+    )
+
+    st.subheader("🔥 Seasonality Heatmap")
+    st.dataframe(pivot)
+
+# ================= DOWNLOAD =================
+csv = filtered.to_csv(index=False).encode("utf-8")
+st.download_button("⬇️ Download Data", csv, "filtered_data.csv")
+
+# ================= AI INSIGHTS =================
+st.subheader("🤖 Smart Insights")
+
+insight = f"""
+- Total Sales: {sales:,.0f}
+- Total Profit: {profit:,.0f}
+- Orders: {orders}
+
+👉 Peak performance observed in top categories/products.
+👉 Consider focusing on high-selling regions.
+👉 Monitor months with low sales for strategy improvement.
+"""
+
+st.info(insight)
