@@ -32,16 +32,20 @@ if uploaded_file:
     st.sidebar.header("Filters")
 
     if "Category" in df.columns:
-        cat = st.sidebar.multiselect("Category",
-                                    df["Category"].dropna().unique(),
-                                    df["Category"].dropna().unique())
+        cat = st.sidebar.multiselect(
+            "Category",
+            df["Category"].dropna().unique(),
+            df["Category"].dropna().unique()
+        )
         if cat:
             df = df[df["Category"].isin(cat)]
 
     if "Region" in df.columns:
-        reg = st.sidebar.multiselect("Region",
-                                    df["Region"].dropna().unique(),
-                                    df["Region"].dropna().unique())
+        reg = st.sidebar.multiselect(
+            "Region",
+            df["Region"].dropna().unique(),
+            df["Region"].dropna().unique()
+        )
         if reg:
             df = df[df["Region"].isin(reg)]
 
@@ -62,87 +66,92 @@ if uploaded_file:
     if df.empty:
         st.warning("⚠️ No data available for selected filters.")
     else:
-        # ================= OVERVIEW =================
-        st.header("📊 Overview")
+        # ---------------- TABS ----------------
+        tab1, tab2, tab3, tab4, tab5 = st.tabs([
+            "📊 Overview",
+            "📈 Trends",
+            "📊 Analysis",
+            "📦 Products",
+            "🤖 Insights"
+        ])
 
-        total_sales = df["Sales"].sum() if "Sales" in df.columns else 0
-        total_profit = df["Profit"].sum() if "Profit" in df.columns else 0
-        total_orders = len(df)
+        # ================= TAB 1: OVERVIEW =================
+        with tab1:
+            st.subheader("📊 Overview")
 
-        c1, c2, c3 = st.columns(3)
-        c1.metric("💰 Total Sales", f"{total_sales:,.0f}")
-        c2.metric("📈 Total Profit", f"{total_profit:,.0f}")
-        c3.metric("📦 Total Orders", total_orders)
+            total_sales = df["Sales"].sum()
+            total_profit = df["Profit"].sum()
+            total_orders = len(df)
 
-        st.markdown("---")
+            c1, c2, c3 = st.columns(3)
+            c1.metric("💰 Total Sales", f"{total_sales:,.0f}")
+            c2.metric("📈 Total Profit", f"{total_profit:,.0f}")
+            c3.metric("📦 Total Orders", total_orders)
 
-        # ================= TRENDS =================
-        st.header("📈 Trends")
+        # ================= TAB 2: TRENDS =================
+        with tab2:
+            st.subheader("📈 Trends")
 
-        col1, col2 = st.columns(2)
+            if "Order Date" in df.columns:
+                col1, col2 = st.columns(2)
 
-        if "Order Date" in df.columns:
-            trend = df.groupby("Order Date")["Sales"].sum().reset_index()
-            fig1 = px.line(trend, x="Order Date", y="Sales", title="Sales Trend")
-            col1.plotly_chart(fig1, use_container_width=True)
+                trend = df.groupby("Order Date")["Sales"].sum().reset_index()
+                fig1 = px.line(trend, x="Order Date", y="Sales", title="Sales Trend")
+                col1.plotly_chart(fig1, use_container_width=True)
 
-            df["Month"] = df["Order Date"].dt.to_period("M").astype(str)
-            monthly = df.groupby("Month")["Sales"].sum().reset_index()
-            fig2 = px.line(monthly, x="Month", y="Sales", title="Monthly Trend")
-            col2.plotly_chart(fig2, use_container_width=True)
+                df["Month"] = df["Order Date"].dt.to_period("M").astype(str)
+                monthly = df.groupby("Month")["Sales"].sum().reset_index()
+                fig2 = px.line(monthly, x="Month", y="Sales", title="Monthly Trend")
+                col2.plotly_chart(fig2, use_container_width=True)
 
-        st.markdown("---")
+        # ================= TAB 3: ANALYSIS =================
+        with tab3:
+            st.subheader("📊 Analysis")
 
-        # ================= ANALYSIS =================
-        st.header("📊 Analysis")
+            col3, col4 = st.columns(2)
 
-        col3, col4 = st.columns(2)
+            if "Category" in df.columns:
+                cat_data = df.groupby("Category")["Sales"].sum().reset_index()
+                fig3 = px.bar(cat_data, x="Category", y="Sales", title="Category Performance")
+                col3.plotly_chart(fig3, use_container_width=True)
 
-        if "Category" in df.columns:
-            cat_data = df.groupby("Category")["Sales"].sum().reset_index()
-            fig3 = px.bar(cat_data, x="Category", y="Sales", title="Category Performance")
-            col3.plotly_chart(fig3, use_container_width=True)
+            if "Region" in df.columns:
+                reg_data = df.groupby("Region")["Sales"].sum().reset_index()
+                fig4 = px.pie(reg_data, names="Region", values="Sales", title="Region Share")
+                col4.plotly_chart(fig4, use_container_width=True)
 
-        if "Region" in df.columns:
-            reg_data = df.groupby("Region")["Sales"].sum().reset_index()
-            fig4 = px.pie(reg_data, names="Region", values="Sales", title="Region Share")
-            col4.plotly_chart(fig4, use_container_width=True)
+        # ================= TAB 4: PRODUCTS =================
+        with tab4:
+            st.subheader("📦 Top Products")
 
-        st.markdown("---")
+            if "Product Name" in df.columns:
+                top_products = (
+                    df.groupby("Product Name")["Sales"]
+                    .sum()
+                    .sort_values(ascending=False)
+                    .head(10)
+                )
 
-        # ================= PRODUCTS =================
-        if "Product Name" in df.columns:
-            st.header("📦 Top Products")
+                st.dataframe(top_products, use_container_width=True)
 
-            top_products = (
-                df.groupby("Product Name")["Sales"]
-                .sum()
-                .sort_values(ascending=False)
-                .head(5)
-            )
+        # ================= TAB 5: INSIGHTS =================
+        with tab5:
+            st.subheader("🤖 Insights")
 
-            st.dataframe(top_products, use_container_width=True)
+            if total_profit < 0:
+                st.error("❌ Business is in loss")
+            else:
+                st.success("✅ Business is profitable")
 
-        st.markdown("---")
+            if "Category" in df.columns:
+                top_cat = df.groupby("Category")["Sales"].sum().idxmax()
+                st.info(f"🔥 Best Category: {top_cat}")
 
-        # ================= INSIGHTS =================
-        st.header("🤖 Insights")
-
-        if total_profit < 0:
-            st.error("❌ Business is in loss")
-        else:
-            st.success("✅ Business is profitable")
-
-        if "Category" in df.columns:
-            top_cat = df.groupby("Category")["Sales"].sum().idxmax()
-            st.info(f"🔥 Best Category: {top_cat}")
-
-        # ================= DOWNLOAD =================
+        # ---------------- DOWNLOAD ----------------
         csv = df.to_csv(index=False)
-
         st.download_button("📥 Download Filtered Data", csv, "filtered_data.csv")
 
-        # ================= RESET =================
+        # ---------------- RESET ----------------
         if st.sidebar.button("🔄 Reset Filters"):
             st.experimental_rerun()
 
