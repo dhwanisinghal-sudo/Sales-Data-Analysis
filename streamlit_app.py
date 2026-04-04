@@ -4,118 +4,60 @@ import plotly.express as px
 from datetime import timedelta
 
 # ---------------- PAGE CONFIG ----------------
-st.set_page_config(page_title="AI Dashboard", layout="wide")
+st.set_page_config(page_title="AI E-commerce Dashboard", layout="wide")
 
-# ---------------- DARK TECH CSS ----------------
+# ---------------- CUSTOM CSS ----------------
 st.markdown("""
 <style>
-
-/* Background */
-.stApp {
-    background: radial-gradient(circle at 20% 20%, #0f2027, #203a43, #000000);
-    color: #e0e0e0;
+body {
+    background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
+    color: white;
 }
-
-/* Title */
-h1 {
-    text-align: center;
-    color: #00f2fe;
-    text-shadow: 0 0 10px #00f2fe, 0 0 20px #00f2fe;
-}
-
-/* KPI Cards */
-[data-testid="metric-container"] {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(0,255,255,0.2);
-    padding: 15px;
+.card {
+    background: rgba(255,255,255,0.08);
+    padding: 20px;
     border-radius: 15px;
     backdrop-filter: blur(10px);
-    box-shadow: 0 0 10px rgba(0,255,255,0.2);
 }
-
-/* Sidebar */
-section[data-testid="stSidebar"] {
-    background: linear-gradient(180deg, #000000, #0f2027);
-}
-
-/* Buttons */
-.stButton>button {
-    background: linear-gradient(90deg, #00f2fe, #4facfe);
-    color: black;
-    border-radius: 10px;
-}
-
-/* Scrollbar */
-::-webkit-scrollbar {
-    width: 8px;
-}
-::-webkit-scrollbar-thumb {
-    background: #00f2fe;
-}
-
 </style>
 """, unsafe_allow_html=True)
 
 # ---------------- TITLE ----------------
-st.markdown("<h1>⚡ AI E-commerce Command Center</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align:center;color:#00f2fe;'>🤖 AI E-commerce Dashboard</h1>", unsafe_allow_html=True)
 
 # ---------------- FILE UPLOAD ----------------
-uploaded_file = st.file_uploader("📂 Upload CSV", type=["csv"])
+uploaded_file = st.file_uploader("📂 Upload your CSV", type=["csv"])
 
-if uploaded_file:
+if uploaded_file is not None:
     df = pd.read_csv(uploaded_file, encoding='latin1')
     df.columns = df.columns.str.strip()
 
-    # ---------------- CLEAN ----------------
+    # ---------------- CLEANING ----------------
     if "Order Date" in df.columns:
         df["Order Date"] = pd.to_datetime(df["Order Date"], errors='coerce')
 
-    # only important columns clean
-    for col in ["Sales", "Profit"]:
-        if col in df.columns:
-            df = df[df[col].notna()]
+    df = df.dropna()
 
-    # ---------------- SIDEBAR ----------------
+    # ---------------- SIDEBAR FILTERS ----------------
     st.sidebar.header("🎯 Filters")
 
-    # Category
     if "Category" in df.columns:
-        cat = st.sidebar.multiselect("Category",
-                                    df["Category"].unique(),
-                                    df["Category"].unique())
+        cat = st.sidebar.multiselect("Category", df["Category"].unique(), df["Category"].unique())
         df = df[df["Category"].isin(cat)]
 
-    # Region
     if "Region" in df.columns:
-        reg = st.sidebar.multiselect("Region",
-                                    df["Region"].unique(),
-                                    df["Region"].unique())
+        reg = st.sidebar.multiselect("Region", df["Region"].unique(), df["Region"].unique())
         df = df[df["Region"].isin(reg)]
 
-    # Date
     if "Order Date" in df.columns:
-        min_date = df["Order Date"].min()
-        max_date = df["Order Date"].max()
-
-        st.sidebar.write("📅 Available:", min_date.date(), "to", max_date.date())
-
-        date_range = st.sidebar.date_input("Date Range", [min_date, max_date])
-
-        if len(date_range) == 2:
-            start, end = pd.to_datetime(date_range)
-
-            if start <= end:
-                filtered_df = df[(df["Order Date"] >= start) & (df["Order Date"] <= end)]
-
-                # AUTO FIX if empty
-                if not filtered_df.empty:
-                    df = filtered_df
-                else:
-                    st.warning("⚠️ No data in selected range → showing full data")
+        start, end = st.sidebar.date_input("Date Range",
+                                          [df["Order Date"].min(), df["Order Date"].max()])
+        df = df[(df["Order Date"] >= pd.to_datetime(start)) &
+                (df["Order Date"] <= pd.to_datetime(end))]
 
     # ---------------- CHECK ----------------
     if df.empty:
-        st.error("❌ No data available")
+        st.warning("⚠️ No data after filters")
     else:
         # ---------------- KPIs ----------------
         sales = int(df["Sales"].sum()) if "Sales" in df.columns else 0
@@ -131,7 +73,8 @@ if uploaded_file:
         if "Order Date" in df.columns:
             trend = df.groupby("Order Date")["Sales"].sum().reset_index()
 
-            fig = px.line(trend, x="Order Date", y="Sales", markers=True)
+            fig = px.line(trend, x="Order Date", y="Sales",
+                          title="📊 Sales Trend", markers=True)
             fig.update_layout(template="plotly_dark")
             st.plotly_chart(fig, use_container_width=True)
 
@@ -139,7 +82,8 @@ if uploaded_file:
         if "Category" in df.columns:
             cat_data = df.groupby("Category")["Sales"].sum().reset_index()
 
-            fig2 = px.bar(cat_data, x="Category", y="Sales", text_auto=True)
+            fig2 = px.bar(cat_data, x="Category", y="Sales",
+                          title="🏆 Category Performance", text_auto=True)
             fig2.update_layout(template="plotly_dark")
             st.plotly_chart(fig2, use_container_width=True)
 
@@ -147,47 +91,53 @@ if uploaded_file:
         if "Region" in df.columns:
             reg_data = df.groupby("Region")["Sales"].sum().reset_index()
 
-            fig3 = px.pie(reg_data, names="Region", values="Sales")
+            fig3 = px.pie(reg_data, names="Region", values="Sales",
+                          title="🌍 Region Share")
             fig3.update_layout(template="plotly_dark")
             st.plotly_chart(fig3, use_container_width=True)
 
         # ---------------- AI INSIGHTS ----------------
         st.subheader("🤖 AI Insights")
 
-        if "Category" in df.columns:
-            top = df.groupby("Category")["Sales"].sum().idxmax()
-            low = df.groupby("Category")["Sales"].sum().idxmin()
+        try:
+            top_cat = df.groupby("Category")["Sales"].sum().idxmax()
+            worst_cat = df.groupby("Category")["Sales"].sum().idxmin()
 
-            st.success(f"🔥 Best Category: {top}")
-            st.warning(f"⚠️ Weak Category: {low}")
+            st.success(f"🔥 Best Category: {top_cat}")
+            st.warning(f"⚠️ Weak Category: {worst_cat}")
+        except:
+            pass
 
         if profit < 0:
-            st.error("❌ Loss detected!")
+            st.error("❌ Loss detected! Reduce discounts or costs")
         else:
-            st.info("✅ Profitable business")
+            st.info("✅ Business is profitable")
 
         # ---------------- FORECAST ----------------
-        st.subheader("🔮 Forecast (Next 7 Days)")
+        st.subheader("🔮 Simple Sales Forecast (Next 7 Days)")
 
         if "Order Date" in df.columns:
             trend = df.groupby("Order Date")["Sales"].sum().reset_index()
+
             trend = trend.sort_values("Order Date")
 
+            # Moving average
             trend["MA"] = trend["Sales"].rolling(7).mean()
 
-            last = trend["Order Date"].max()
+            last_date = trend["Order Date"].max()
 
-            future_dates = [last + timedelta(days=i) for i in range(1, 8)]
+            future_dates = [last_date + timedelta(days=i) for i in range(1, 8)]
             future_sales = [trend["MA"].iloc[-1]] * 7
 
-            forecast = pd.DataFrame({
+            forecast_df = pd.DataFrame({
                 "Order Date": future_dates,
                 "Sales": future_sales
             })
 
-            full = pd.concat([trend[["Order Date", "Sales"]], forecast])
+            full_df = pd.concat([trend[["Order Date", "Sales"]], forecast_df])
 
-            fig4 = px.line(full, x="Order Date", y="Sales")
+            fig4 = px.line(full_df, x="Order Date", y="Sales",
+                           title="📈 Forecast vs Actual")
             fig4.update_layout(template="plotly_dark")
             st.plotly_chart(fig4, use_container_width=True)
 
