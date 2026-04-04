@@ -4,6 +4,12 @@
 ## Overview
 This project performs Exploratory Data Analysis (EDA) on a sales dataset using Python.
 
+## 📸 Dashboard Preview
+<img width="1914" height="877" alt="image" src="https://github.com/user-attachments/assets/f39f7c9f-c7e6-4fcf-9e83-fc753cf641b4" />
+
+## 🌐 Live Demo
+https://sales-data-analysis-fbipjelt9qqixwbopdcziq.streamlit.app/
+
 ## Tools Used
 - Python
 - Pandas
