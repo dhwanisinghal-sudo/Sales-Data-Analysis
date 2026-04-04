@@ -15,7 +15,7 @@ This dashboard enables users to explore sales data interactively, track key perf
 - 📊 Interactive Charts
 - 
 ## 🌐 Live Demo
-https://sales-data-analysis-fbipjelt9qqixwbopdcziq.streamlit.app/
+👉 [Click here to view the dashboard] https://sales-data-analysis-fbipjelt9qqixwbopdcziq.streamlit.app/
 
 ## 🛠️ Tech Stack
 - Python
@@ -42,3 +42,5 @@ https://sales-data-analysis-fbipjelt9qqixwbopdcziq.streamlit.app/
 
 ## Conclusion
 This dashboard helps in understanding sales trends, identifying top-performing categories, and making data-driven business decisions through interactive visualizations.
+
+⭐ If you like this project, don't forget to star the repository!
