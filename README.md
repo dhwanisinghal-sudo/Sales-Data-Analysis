@@ -1,4 +1,5 @@
 # Sales Data Analysis 📊
+🚀 An interactive E-commerce Sales Dashboard built using Python and Streamlit to analyze sales performance, track KPIs, and generate business insights.
 
 ## Overview
 This project performs Exploratory Data Analysis (EDA) on a sales dataset using Python.
