@@ -19,9 +19,6 @@ if uploaded_file:
 
     df.columns = df.columns.str.strip()
 
-    # DEBUG (optional)
-    st.write("Columns:", df.columns.tolist())
-
     # -------- DATE SAFE --------
     if "Order Date" in df.columns:
         df["Order Date"] = pd.to_datetime(df["Order Date"], errors='coerce')
@@ -32,30 +29,36 @@ if uploaded_file:
     if "Profit" in df.columns:
         df = df[df["Profit"].notna()]
 
-    # ---------------- SIDEBAR ----------------
+    # ---------------- SIDEBAR FILTERS ----------------
     st.sidebar.header("🎯 Filters")
 
     # Category
     if "Category" in df.columns:
-        cat = st.sidebar.multiselect("Category",
-                                    df["Category"].dropna().unique(),
-                                    df["Category"].dropna().unique())
+        cat = st.sidebar.multiselect(
+            "Category",
+            df["Category"].dropna().unique(),
+            df["Category"].dropna().unique()
+        )
         if cat:
             df = df[df["Category"].isin(cat)]
 
     # Sub-Category
     if "Sub-Category" in df.columns:
-        sub = st.sidebar.multiselect("Sub-Category",
-                                    df["Sub-Category"].dropna().unique(),
-                                    df["Sub-Category"].dropna().unique())
+        sub = st.sidebar.multiselect(
+            "Sub-Category",
+            df["Sub-Category"].dropna().unique(),
+            df["Sub-Category"].dropna().unique()
+        )
         if sub:
             df = df[df["Sub-Category"].isin(sub)]
 
     # Region
     if "Region" in df.columns:
-        reg = st.sidebar.multiselect("Region",
-                                    df["Region"].dropna().unique(),
-                                    df["Region"].dropna().unique())
+        reg = st.sidebar.multiselect(
+            "Region",
+            df["Region"].dropna().unique(),
+            df["Region"].dropna().unique()
+        )
         if reg:
             df = df[df["Region"].isin(reg)]
 
@@ -129,12 +132,14 @@ if uploaded_file:
         with tab2:
             if "Order Date" in df.columns and "Sales" in df.columns:
                 trend = df.groupby("Order Date")["Sales"].sum().reset_index()
-                st.plotly_chart(px.line(trend, x="Order Date", y="Sales"), use_container_width=True)
+                st.plotly_chart(px.line(trend, x="Order Date", y="Sales"),
+                                use_container_width=True)
 
                 try:
                     df["Month"] = df["Order Date"].dt.to_period("M").astype(str)
                     monthly = df.groupby("Month")["Sales"].sum().reset_index()
-                    st.plotly_chart(px.line(monthly, x="Month", y="Sales"), use_container_width=True)
+                    st.plotly_chart(px.line(monthly, x="Month", y="Sales"),
+                                    use_container_width=True)
                 except:
                     pass
 
@@ -144,11 +149,13 @@ if uploaded_file:
 
             if "Category" in df.columns and "Sales" in df.columns:
                 cat_data = df.groupby("Category")["Sales"].sum().reset_index()
-                col1.plotly_chart(px.bar(cat_data, x="Category", y="Sales"), use_container_width=True)
+                col1.plotly_chart(px.bar(cat_data, x="Category", y="Sales"),
+                                  use_container_width=True)
 
             if "Region" in df.columns and "Sales" in df.columns:
                 reg_data = df.groupby("Region")["Sales"].sum().reset_index()
-                col2.plotly_chart(px.pie(reg_data, names="Region", values="Sales"), use_container_width=True)
+                col2.plotly_chart(px.pie(reg_data, names="Region", values="Sales"),
+                                  use_container_width=True)
 
             if "Sales" in df.columns and "Profit" in df.columns:
                 st.plotly_chart(px.scatter(df, x="Sales", y="Profit", color="Category"),
