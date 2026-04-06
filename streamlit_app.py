@@ -1,12 +1,10 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-st.title("Sales Dashboard")
-st.write("Welcome to my dashboard") 
-
-# ---------------- PAGE CONFIG ----------------
 st.set_page_config(page_title="Dashboard", layout="wide")
 
+st.title("📊 E-commerce Analytics Dashboard")
+st.write("Welcome to my dashboard")
 st.title("📊 E-commerce Analytics Dashboard")
 
 uploaded_file = st.file_uploader("📂 Upload CSV", type=["csv"])
