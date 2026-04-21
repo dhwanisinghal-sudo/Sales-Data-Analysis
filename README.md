@@ -1,4 +1,5 @@
 E-commerce Order Trend and Seasonal Analysis 📊
+
 🚀 An interactive E-commerce Sales Dashboard built using Python and Streamlit to analyze sales performance, track KPIs, seasonal trends, and generate business insights.
 This dashboard enables users to explore sales data interactively, track key performance metrics, identify seasonal patterns, and gain insights into business performance through visual analytics.
 
