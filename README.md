@@ -1,46 +1,63 @@
-# Sales Data Analysis 📊
-🚀 An interactive E-commerce Sales Dashboard built using Python and Streamlit to analyze sales performance, track KPIs, and generate business insights.
+E-commerce Order Trend and Seasonal Analysis 📊
+🚀 An interactive E-commerce Sales Dashboard built using Python and Streamlit to analyze sales performance, track KPIs, seasonal trends, and generate business insights.
+This dashboard enables users to explore sales data interactively, track key performance metrics, identify seasonal patterns, and gain insights into business performance through visual analytics.
 
-This dashboard enables users to explore sales data interactively, track key performance metrics, and gain insights into business performance through visual analytics.
+✨ Features
 
-## 📸 Dashboard Preview
-<img width="958" height="437" alt="image" src="https://github.com/user-attachments/assets/a10363a9-f51d-4c1a-a855-cc98ff5cddcb" />
+📊 Sales, Profit, Orders KPIs
+🔍 Dynamic Filters (Category, Sub-category, Region)
+📈 Trend Analysis
+📅 Seasonal & Order Trend Analysis
+🔥 Sales Heatmap (Year vs Month)
+📊 Quarter-wise Sales Breakdown
+📦 Year-wise Order Count
+🏆 Peak Sales Month Detection
+📂 CSV Upload Support
+📥 Download Filtered Data
 
-## ✨ Features
-- 📊 Sales, Profit, Orders KPIs  
-- 🔍 Dynamic Filters (Category, Sub-category, Region)  
-- 📈 Trend Analysis  
-- 📂 CSV Upload Support  
-- 📥 Download Filtered Data  
-- 📊 Interactive Charts
-- 
-## 🌐 Live Demo
-👉 [Click here to view the dashboard] https://sales-data-analysis-fbipjelt9qqixwbopdcziq.streamlit.app/
 
-## 🛠️ Tech Stack
-- Python
-- Pandas
-- Matplotlib
-- Seaborn
+🌐 Live Demo
+👉 <img width="956" height="436" alt="image" src="https://github.com/user-attachments/assets/5c57e882-e083-47d4-9bcc-e73871a90461" />
 
-## 📂 Dataset
+🛠️ Tech Stack
 
-### 📄 data1.csv
-- Main dataset used for analysis  
-- Contains sales, profit, category, and region data  
+Python
+Pandas
+Plotly
+Streamlit
 
-### 📄 filtered_data.csv
-- Generated after applying filters  
-- Downloadable from dashboard
-- 
-## Key Insights
-- Highest Sales Category: Technology
-- Best Region: West
-- Top City: New York City
-- Peak Month: November
-- Top Segment: Consumer
 
-## Conclusion
-This dashboard helps in understanding sales trends, identifying top-performing categories, and making data-driven business decisions through interactive visualizations.
+📂 Dataset
+📄 data1.csv
+
+Main dataset used for analysis
+Contains sales, profit, category, region, and order date data
+
+📄 filtered_data.csv
+
+Generated after applying filters
+Downloadable from dashboard
+
+
+📅 Seasonal Analysis
+
+Monthly order trends to identify high and low demand periods
+Quarter-wise (Q1, Q2, Q3, Q4) sales comparison
+Year vs Month heatmap to spot seasonal patterns
+Peak sales month detection for business planning
+
+
+🔑 Key Insights
+
+📌 Highest Sales Category: Technology
+📌 Best Region: West
+📌 Top City: New York City
+📌 Peak Month: November
+📌 Top Segment: Consumer
+📌 Highest Sales Quarter: Q4 (Oct-Dec)
+
+
+Conclusion
+This dashboard helps in understanding sales trends, identifying seasonal patterns, top-performing categories, and making data-driven business decisions through interactive visualizations.
 
 ⭐ If you like this project, don't forget to star the repository!
