@@ -1,11 +1,10 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-st.set_page_config(page_title="Sales Dashboard", page_icon="📊", layout="wide")
-st.title("📊 E-commerce Sales Analytics Dashboard") 
 
-st.write("Explore sales trends, category performance & regional insights interactively") 
-# ---------------- PAGE CONFIG ---------------- st.set_page_config(page_title="Dashboard", layout="wide")
+st.set_page_config(page_title="Sales Dashboard", page_icon="📊", layout="wide")
+st.title("📊 E-commerce Sales Analytics Dashboard")
+st.write("Explore sales trends, category performance & regional insights interactively")
 
 uploaded_file = st.file_uploader("📂 Upload CSV", type=["csv"])
 
@@ -117,8 +116,8 @@ if uploaded_file:
         total_orders = len(df)
 
         # ---------------- TABS ----------------
-        tab1, tab2, tab3, tab4, tab5 = st.tabs([
-            "Overview", "Trends", "Analysis", "Products", "Insights"
+        tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
+            "Overview", "Trends", "Analysis", "Products", "Insights", "Seasonal"
         ])
 
         # -------- OVERVIEW --------
@@ -180,6 +179,74 @@ if uploaded_file:
                     st.info(f"Best Category: {top_cat}")
                 except:
                     pass
+
+        # -------- SEASONAL --------
+        with tab6:
+            if "Order Date" in df.columns:
+                st.subheader("📅 Seasonal & Order Trend Analysis")
+
+                df["Month_Num"] = df["Order Date"].dt.month
+                df["Year"] = df["Order Date"].dt.year
+                df["Quarter"] = df["Order Date"].dt.quarter
+                df["Month Name"] = df["Order Date"].dt.strftime("%b")
+
+                # Monthly Order Trend
+                monthly_orders = df.groupby(
+                    df["Order Date"].dt.to_period("M").astype(str)
+                ).size().reset_index()
+                monthly_orders.columns = ["Month", "Orders"]
+                st.plotly_chart(
+                    px.line(monthly_orders, x="Month", y="Orders",
+                            title="📈 Monthly Order Trend"),
+                    use_container_width=True
+                )
+
+                col1, col2 = st.columns(2)
+
+                # Quarter-wise Sales
+                if "Sales" in df.columns:
+                    q_sales = df.groupby("Quarter")["Sales"].sum().reset_index()
+                    q_sales["Quarter"] = "Q" + q_sales["Quarter"].astype(str)
+                    col1.plotly_chart(
+                        px.bar(q_sales, x="Quarter", y="Sales",
+                               title="📊 Quarter-wise Sales",
+                               color="Quarter"),
+                        use_container_width=True
+                    )
+
+                # Month-wise Heatmap
+                if "Sales" in df.columns:
+                    heat = df.groupby(["Year", "Month_Num"])["Sales"].sum().reset_index()
+                    heat_pivot = heat.pivot(index="Year", columns="Month_Num", values="Sales")
+                    heat_pivot.columns = ["Jan","Feb","Mar","Apr","May","Jun",
+                                          "Jul","Aug","Sep","Oct","Nov","Dec"][:len(heat_pivot.columns)]
+                    col2.plotly_chart(
+                        px.imshow(heat_pivot,
+                                  title="🔥 Sales Heatmap (Year vs Month)",
+                                  labels=dict(color="Sales"),
+                                  color_continuous_scale="YlOrRd"),
+                        use_container_width=True
+                    )
+
+                # Peak Month highlight
+                if "Sales" in df.columns:
+                    month_sales = df.groupby("Month Name")["Sales"].sum()
+                    peak_month = month_sales.idxmax()
+                    peak_val = month_sales.max()
+                    st.success(f"🏆 Peak Sales Month: **{peak_month}** — ₹{peak_val:,.0f}")
+
+                # Year-wise Order Count
+                yearly_orders = df.groupby("Year").size().reset_index()
+                yearly_orders.columns = ["Year", "Orders"]
+                st.plotly_chart(
+                    px.bar(yearly_orders, x="Year", y="Orders",
+                           title="📦 Year-wise Order Count",
+                           color="Orders", color_continuous_scale="Blues"),
+                    use_container_width=True
+                )
+
+            else:
+                st.warning("⚠️ Order Date column not found!")
 
         # -------- DOWNLOAD --------
         st.download_button("Download Data", df.to_csv(index=False), "data.csv")
