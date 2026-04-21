@@ -1,7 +1,13 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+st.set_page_config(page_title="Sales Dashboard", page_icon="📊", layout="wide")
 st.title("📊 E-commerce Sales Analytics Dashboard") 
+col1, col2, col3, col4 = st.columns(4)
+col1.metric("Total Sales", "$2.3M")
+col2.metric("Total Profit", "$286K")
+col3.metric("Total Orders", "9,994")
+col4.metric("Top Region", "West 🏆")
 st.write("Explore sales trends, category performance & regional insights interactively") 
 # ---------------- PAGE CONFIG ---------------- st.set_page_config(page_title="Dashboard", layout="wide")
 
