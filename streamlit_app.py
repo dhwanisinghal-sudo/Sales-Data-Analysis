@@ -3,13 +3,7 @@ import pandas as pd
 import plotly.express as px
 st.set_page_config(page_title="Sales Dashboard", page_icon="📊", layout="wide")
 st.title("📊 E-commerce Sales Analytics Dashboard") 
-# Metrics row
-    col1, col2, col3, col4 = st.columns(4)
-    col1.metric("Total Sales", f"${df['Sales'].sum():,.0f}")
-    col2.metric("Total Profit", f"${df['Profit'].sum():,.0f}")
-    col3.metric("Total Orders", f"{df.shape[0]:,}")
-    col4.metric("Top Region", df['Region'].value_counts().idxmax())
-    
+
 st.write("Explore sales trends, category performance & regional insights interactively") 
 # ---------------- PAGE CONFIG ---------------- st.set_page_config(page_title="Dashboard", layout="wide")
 
