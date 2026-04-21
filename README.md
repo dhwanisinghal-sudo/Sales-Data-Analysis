@@ -4,7 +4,7 @@
 This dashboard enables users to explore sales data interactively, track key performance metrics, and gain insights into business performance through visual analytics.
 
 ## 📸 Dashboard Preview
-<img width="1917" height="878" alt="image" src="https://github.com/user-attachments/assets/094d2126-b7e2-4d55-a8d8-8467a7c6680c" />
+<img width="957" height="433" alt="image" src="https://github.com/user-attachments/assets/16cc9606-5880-45c2-8476-7863a0ce7257" />
 
 ## ✨ Features
 - 📊 Sales, Profit, Orders KPIs  
