@@ -1,8 +1,8 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-st.title("Sales Dashboard") 
-st.write("Welcome to my dashboard") 
+st.title("📊 E-commerce Sales Analytics Dashboard") 
+st.write("Explore sales trends, category performance & regional insights interactively") 
 # ---------------- PAGE CONFIG ---------------- st.set_page_config(page_title="Dashboard", layout="wide")
 st.title("📊 E-commerce Analytics Dashboard")
 
