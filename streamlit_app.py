@@ -4,7 +4,6 @@ import plotly.express as px
 st.title("📊 E-commerce Sales Analytics Dashboard") 
 st.write("Explore sales trends, category performance & regional insights interactively") 
 # ---------------- PAGE CONFIG ---------------- st.set_page_config(page_title="Dashboard", layout="wide")
-st.title("📊 E-commerce Analytics Dashboard")
 
 uploaded_file = st.file_uploader("📂 Upload CSV", type=["csv"])
 
