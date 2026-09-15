@@ -40,9 +40,6 @@ This project turns raw e-commerce sales data into a fully interactive **Streamli
 
 > 👉 **[Try the dashboard here](https://grocery-recommender-system-collaborative-filtering-cv-ln5suvwv.streamlit.app/)**
 
-<div align="center">
-<em>Add a screenshot or GIF of the dashboard here for maximum impact:</em>
-
 ```md
 ![Dashboard Preview](assets/dashboard-preview.png)
 ```
