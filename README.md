@@ -1,64 +1,108 @@
-E-commerce Order Trend and Seasonal Analysis 📊
+<div align="center">
 
-🚀 An interactive E-commerce Sales Dashboard built using Python and Streamlit to analyze sales performance, track KPIs, seasonal trends, and generate business insights.
-This dashboard enables users to explore sales data interactively, track key performance metrics, identify seasonal patterns, and gain insights into business performance through visual analytics.
+# 📊 E-Commerce Order Trend & Seasonal Analysis
 
-✨ Features
+### An interactive sales dashboard built with Python & Streamlit
 
-📊 Sales, Profit, Orders KPIs
-🔍 Dynamic Filters (Category, Sub-category, Region)
-📈 Trend Analysis
-📅 Seasonal & Order Trend Analysis
-🔥 Sales Heatmap (Year vs Month)
-📊 Quarter-wise Sales Breakdown
-📦 Year-wise Order Count
-🏆 Peak Sales Month Detection
-📂 CSV Upload Support
-📥 Download Filtered Data
+[![Python](https://img.shields.io/badge/Python-3.9+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
+[![Streamlit](https://img.shields.io/badge/Streamlit-App-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white)](https://streamlit.io/)
+[![Pandas](https://img.shields.io/badge/Pandas-Data%20Analysis-150458?style=for-the-badge&logo=pandas&logoColor=white)](https://pandas.pydata.org/)
+[![Plotly](https://img.shields.io/badge/Plotly-Visualizations-3F4F75?style=for-the-badge&logo=plotly&logoColor=white)](https://plotly.com/)
 
+**Explore sales performance, track KPIs, uncover seasonal trends, and generate business insights — all in one interactive dashboard.**
 
-🌐 Live Demo
-👉 <img width="956" height="436" alt="image" src="https://github.com/user-attachments/assets/5c57e882-e083-47d4-9bcc-e73871a90461" />
+[Live Demo](#-live-demo) • [Features](#-features) • [Tech Stack](#%EF%B8%8F-tech-stack) • [Dataset](#-dataset) • [Key Insights](#-key-insights) • [Getting Started](#-getting-started)
 
-🛠️ Tech Stack
+</div>
 
-Python
-Pandas
-Plotly
-Streamlit
+---
 
+## 🧾 Overview
 
-📂 Dataset
-📄 data1.csv
+This project turns raw e-commerce sales data into a fully interactive **Streamlit dashboard**. Upload your own data or use the bundled dataset to explore KPIs, filter by category or region, and surface seasonal patterns that drive smarter business decisions.
 
-Main dataset used for analysis
-Contains sales, profit, category, region, and order date data
+## ✨ Features
 
-📄 filtered_data.csv
+| | |
+|---|---|
+| 📊 **KPI Dashboard** | Real-time Sales, Profit, and Order metrics at a glance |
+| 🔍 **Dynamic Filters** | Slice data by Category, Sub-category, and Region |
+| 📈 **Trend Analysis** | Visualize how sales evolve over time |
+| 📅 **Seasonal Analysis** | Spot recurring seasonal and order-trend patterns |
+| 🔥 **Sales Heatmap** | Year-vs-month heatmap to pinpoint demand spikes |
+| 📊 **Quarter Breakdown** | Compare performance across Q1–Q4 |
+| 📦 **Year-wise Orders** | Track order volume growth year over year |
+| 🏆 **Peak Month Detection** | Automatically flags the highest-performing month |
+| 📂 **CSV Upload** | Bring your own dataset into the dashboard |
+| 📥 **Filtered Export** | Download the filtered view as CSV |
 
-Generated after applying filters
-Downloadable from dashboard
+## 🌐 Live Demo
 
+> 👉 **[Try the dashboard here](https://grocery-recommender-system-collaborative-filtering-cv-ln5suvwv.streamlit.app/)**
 
-📅 Seasonal Analysis
+<div align="center">
+<em>Add a screenshot or GIF of the dashboard here for maximum impact:</em>
 
-Monthly order trends to identify high and low demand periods
-Quarter-wise (Q1, Q2, Q3, Q4) sales comparison
-Year vs Month heatmap to spot seasonal patterns
-Peak sales month detection for business planning
+```md
+![Dashboard Preview](assets/dashboard-preview.png)
+```
 
+</div>
 
-🔑 Key Insights
+## 🛠️ Tech Stack
 
-📌 Highest Sales Category: Technology
-📌 Best Region: West
-📌 Top City: New York City
-📌 Peak Month: November
-📌 Top Segment: Consumer
-📌 Highest Sales Quarter: Q4 (Oct-Dec)
+- **Language:** Python
+- **Data Processing:** Pandas
+- **Visualization:** Plotly
+- **Web App / UI:** Streamlit
 
+## 📂 Dataset
 
-Conclusion
-This dashboard helps in understanding sales trends, identifying seasonal patterns, top-performing categories, and making data-driven business decisions through interactive visualizations.
+| File | Description |
+|---|---|
+| `data1.csv` | Main dataset — sales, profit, category, region, and order date |
+| `filtered_data.csv` | Auto-generated after applying dashboard filters, downloadable |
 
-⭐ If you like this project, don't forget to star the repository!
+## 📅 Seasonal Analysis
+
+- Monthly order trends to identify high- and low-demand periods
+- Quarter-wise (Q1–Q4) sales comparison
+- Year vs. month heatmap to spot seasonal patterns
+- Automatic peak sales month detection for planning
+
+## 🔑 Key Insights
+
+| Metric | Result |
+|---|---|
+| 🏅 Highest Sales Category | **Technology** |
+| 🌎 Best Region | **West** |
+| 🏙️ Top City | **New York City** |
+| 📆 Peak Month | **November** |
+| 👥 Top Segment | **Consumer** |
+| 📈 Highest Sales Quarter | **Q4 (Oct–Dec)** |
+
+## 🚀 Getting Started
+
+```bash
+# Clone the repository
+git clone https://github.com/dhwanisinghal-sudo/Sales-Data-Analysis.git
+cd Sales-Data-Analysis
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Run the dashboard
+streamlit run streamlit_app.py
+```
+
+## 📌 Conclusion
+
+This dashboard makes it easy to understand sales trends, identify seasonal patterns, spot top-performing categories, and make data-driven business decisions — all through interactive visualizations.
+
+---
+
+<div align="center">
+
+⭐ **If you found this project useful, consider giving it a star!**
+
+</div>
